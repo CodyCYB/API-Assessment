@@ -3,8 +3,6 @@ from PIL import Image, ImageTk
 import requests
 from io import BytesIO
 
-# ================= API =================
-
 BASE_URL = "https://pokeapi.co/api/v2/pokemon/"
 
 def get_pokemon(query):
@@ -15,17 +13,13 @@ def get_pokemon(query):
     except:
         return None
 
-# ================= UTILITIES =================
-
 def stat_color(value):
     if value < 60:
-        return "#FBC02D"  # yellow
+        return "#FBC02D"
     elif value < 100:
-        return "#F57C00"  # orange
+        return "#F57C00"
     else:
-        return "#D32F2F"  # red
-
-# ================= MODEL =================
+        return "#D32F2F"
 
 class Pokemon:
     def __init__(self, name, stats, sprite, abilities, moves):
@@ -45,8 +39,6 @@ class Pokemon:
             [m["move"]["name"] for m in data["moves"][:12]]
         )
 
-# ================= SCROLLABLE FRAME =================
-
 class ScrollableFrame(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -65,12 +57,9 @@ class ScrollableFrame(tk.Frame):
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
-# ================= GUI =================
-
 BG_RED = "#D32F2F"
 BG_YELLOW = "#FFEB3B"
 BOX_BG = "#FFFDE7"
-BLACK = "#000000"
 
 class PokedexGUI:
     def __init__(self, root):
@@ -110,7 +99,6 @@ class PokedexGUI:
         self.status = tk.Label(self.root, bg=BG_RED, fg="white")
         self.status.pack()
 
-        # Sprite
         self.sprite_box = tk.Frame(self.root, bg=BOX_BG, relief="solid", borderwidth=3)
         self.sprite_box.pack(pady=10)
 
@@ -118,12 +106,13 @@ class PokedexGUI:
         self.sprite_label.pack(padx=20, pady=20)
 
         self.name_label = tk.Label(
-            self.root, font=("Arial", 20, "bold"),
-            bg=BG_RED, fg=BG_YELLOW
+            self.root,
+            font=("Arial", 20, "bold"),
+            bg=BG_RED,
+            fg=BG_YELLOW
         )
         self.name_label.pack()
 
-        # Scrollable info box
         container = tk.Frame(self.root, bg=BG_RED)
         container.pack(fill="both", expand=True, padx=10, pady=10)
 
@@ -141,103 +130,96 @@ class PokedexGUI:
         self.display()
 
     def display(self):
-    # Sprite
-     if self.pokemon.sprite:
-        img = Image.open(BytesIO(requests.get(self.pokemon.sprite).content))
-        img = img.resize((180, 180))
-        self.sprite_img = ImageTk.PhotoImage(img)
-        self.sprite_label.config(image=self.sprite_img)
+        if self.pokemon.sprite:
+            img = Image.open(BytesIO(requests.get(self.pokemon.sprite).content))
+            img = img.resize((180, 180))
+            self.sprite_img = ImageTk.PhotoImage(img)
+            self.sprite_label.config(image=self.sprite_img)
 
-    self.name_label.config(text=self.pokemon.name)
+        self.name_label.config(text=self.pokemon.name)
 
-    frame = self.info.frame
-    for w in frame.winfo_children():
-        w.destroy()
-
-    # ===== Stats =====
-    tk.Label(
-        frame,
-        text="Stats",
-        font=("Arial", 14, "bold"),
-        bg=BOX_BG
-    ).pack(pady=10)
-
-    stats_container = tk.Frame(frame, bg=BOX_BG)
-    stats_container.pack(anchor="center")
-
-    for stat, value in self.pokemon.stats.items():
-        row = tk.Frame(stats_container, bg=BOX_BG)
-        row.pack(pady=4)
+        frame = self.info.frame
+        for w in frame.winfo_children():
+            w.destroy()
 
         tk.Label(
-            row,
-            text=stat.upper(),
-            width=12,           # FIX: reserved space
-            anchor="e",
+            frame,
+            text="Stats",
+            font=("Arial", 14, "bold"),
             bg=BOX_BG
-        ).pack(side="left", padx=5)
+        ).pack(pady=10)
 
-        bar = tk.Canvas(
-            row,
-            width=220,
-            height=18,
-            bg="white",
-            highlightthickness=1
-        )
-        bar.pack(side="left", padx=8)
+        stats_container = tk.Frame(frame, bg=BOX_BG)
+        stats_container.pack(anchor="center")
 
-        fill_width = min(int((value / 255) * 220), 220)
-        bar.create_rectangle(
-            0, 0, fill_width, 18,
-            fill=stat_color(value),
-            outline=""
-        )
+        for stat, value in self.pokemon.stats.items():
+            row = tk.Frame(stats_container, bg=BOX_BG)
+            row.pack(pady=4)
+
+            tk.Label(
+                row,
+                text=stat.upper(),
+                width=12,
+                anchor="e",
+                bg=BOX_BG
+            ).pack(side="left", padx=6)
+
+            bar = tk.Canvas(
+                row,
+                width=220,
+                height=18,
+                bg="white",
+                highlightthickness=1
+            )
+            bar.pack(side="left", padx=6)
+
+            fill_width = min(int((value / 255) * 220), 220)
+            bar.create_rectangle(
+                0, 0, fill_width, 18,
+                fill=stat_color(value),
+                outline=""
+            )
+
+            tk.Label(
+                row,
+                text=value,
+                width=4,
+                bg=BOX_BG
+            ).pack(side="left", padx=6)
 
         tk.Label(
-            row,
-            text=value,
-            width=4,
+            frame,
+            text="Abilities",
+            font=("Arial", 14, "bold"),
             bg=BOX_BG
-        ).pack(side="left", padx=5)
+        ).pack(pady=10)
 
-    # ===== Abilities =====
-    tk.Label(
-        frame,
-        text="Abilities",
-        font=("Arial", 14, "bold"),
-        bg=BOX_BG
-    ).pack(pady=10)
+        abilities_container = tk.Frame(frame, bg=BOX_BG)
+        abilities_container.pack(anchor="center")
 
-    abilities_container = tk.Frame(frame, bg=BOX_BG)
-    abilities_container.pack(anchor="center")
+        for ability in self.pokemon.abilities:
+            tk.Label(
+                abilities_container,
+                text=ability,
+                bg=BOX_BG
+            ).pack()
 
-    for ability in self.pokemon.abilities:
         tk.Label(
-            abilities_container,
-            text=ability,
+            frame,
+            text="Moves",
+            font=("Arial", 14, "bold"),
             bg=BOX_BG
-        ).pack()
+        ).pack(pady=10)
 
-    # ===== Moves =====
-    tk.Label(
-        frame,
-        text="Moves",
-        font=("Arial", 14, "bold"),
-        bg=BOX_BG
-    ).pack(pady=10)
+        moves_container = tk.Frame(frame, bg=BOX_BG)
+        moves_container.pack(anchor="center")
 
-    moves_container = tk.Frame(frame, bg=BOX_BG)
-    moves_container.pack(anchor="center")
-
-    for move in self.pokemon.moves:
-        tk.Label(
-            moves_container,
-            text=move,
-            bg=BOX_BG
-        ).pack()
-
-
-# ================= RUN =================
+        for move in self.pokemon.moves:
+            tk.Label(
+                moves_container,
+                text=move,
+                bg=BOX_BG
+            ).pack()
 
 if __name__ == "__main__":
     root = tk.Tk()
